@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.heading {
+  font-size: 1.5rem; /* Adjust for responsiveness */
+  font-weight: bold; /* Make it bold */
+  text-align: center; /* Center the text horizontally */
+  margin: 0 auto; /* Center the heading block in its parent */
+  color: #000; /* Default color */
+  
+}
+
+.heading2 {
+  font-size: 12px; /* Adjust for responsiveness */
+  font-weight:500; /* Make it bold */
+  text-align: center; /* Center the text horizontally */
+  margin: 0 auto; /* Center the heading block in its parent */
+  color: #000; /* Default color */
+  
+}
+
+.heading3 {
+  font-size: 12px; /* Adjust for responsiveness */
+  font-weight:500; /* Make it bold */
+  text-align: left; /* Center the text horizontally */
+  margin: 0 auto; /* Center the heading block in its parent */
+  color: #000; /* Default color */
+  
+}
+.heading4 {
+  font-size: 12px; /* Adjust for responsiveness */
+  font-weight:400; /* Make it bold */
+  text-align: left; /* Center the text horizontally */
+  margin: 0 auto; /* Center the heading block in its parent */
+  color: #898989; /* Default color */
+  
+}
+
+
+
+@media (min-width: 768px) {
+  .heading {
+    font-size: 2rem; /* Larger font size for medium and larger screens */
+  }
+  .heading2{
+    font-size: 24px;
+  }
+  .heading3{
+    font-size: 24px;
+  }
+}
+
+
+@media (min-width: 1024px) {
+  .heading {
+    font-size: 3rem; /* Even larger font size for large screens */
+  }
+  .heading2{
+    font-size: 20px;
+  }
+  .heading3{
+    font-size: 24px;
+  }
+}
+
+
+/* 
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+}
+.heading{
+  @apply text-center flex justify-center text-black text-[28px] sm:text-[33px] md:text-[49px] font-bold
+}
+body {
+
+ color: white; /* optional: to ensure text is visible on the black background */
+
+
