@@ -1,5 +1,5 @@
 import { client } from "@/sanity/lib/client";
-
+import { Order } from '../../app/(addtocart)/redux/Features/OrderSlice'; // Ensure you're importing the Order typenpm 
 import { CartItem} from "@/app/(addtocart)/redux/types";
 
 interface OrderDetails {
@@ -20,6 +20,41 @@ interface OrderDetails {
   subtotal: number;
   orderDate: string;
 }
+
+
+type Product = {
+  id: string;
+  title: string;
+  price: number;
+  description: string;
+  discountPercentage: number;
+  tags: string[];
+  isNew: boolean;
+  imageUrl: string;
+  quantity: number;
+};
+
+export type Cart = {
+  items: Product[]; // Array of products in the cart
+  totalAmount: number; // Total price of all products in the cart
+};
+
+
+interface BillingDetails {
+  firstName: string;
+  lastName: string;
+  companyName?: string;
+  country?: string;
+  address: string;
+  city: string;
+  province: string;
+  zip: string;
+  phone: string;
+  email: string;
+  additionalInfo?: string;
+}
+
+
 
 export const getProductById = async (id: string) => {
   try {
@@ -45,26 +80,31 @@ export const getProductById = async (id: string) => {
 
 
        
-       
+// export type CartItem = {
+//   id: string;
+//   title:string  // This is required
+//   price: number;
+//   quantity: number;
+// };
 
 
-type Product = {
-  id: string;
-  title: string;
-  price: number;
-  description: string;
-  discountPercentage: number;
-  tags: string[];
-  isNew: boolean;
-  imageUrl: string;
-  quantity: number;
-};
 
-export type Cart = {
-  items: Product[]; // Array of products in the cart
-  totalAmount: number; // Total price of all products in the cart
-};
+// export const getCategories = async () => {
+//   const query = '*[_type == "category"]{_id, title, slug}';
+//   const categories = await client.fetch(query);
+//   return categories;
+// };
 
+// export const getProductsByCategory = async (categoryId: string | null) => {
+//   const query = categoryId
+//     ? `*[_type == "product" && category._ref == $categoryId]{_id, title, price, "imageUrl": productImage.asset->url}`
+//     : `*[_type == "product"]{_id, title, price, "imageUrl": productImage.asset->url}`;
+//   const products = await client.fetch(query, { categoryId });
+//   return products;
+// };
+
+
+// src/sanity/lib/data.ts
 
 
 export const getCategories = async () => {
@@ -80,6 +120,7 @@ export const getProductsByCategory = async (categoryId: string | null) => {
   const products = await client.fetch(query, { categoryId });
   return products;
 };
+
 
 
 
@@ -126,19 +167,6 @@ export const getProductsBySearchTerm = async (searchTerm: string) => {
 
 
 
-interface BillingDetails {
-  firstName: string;
-  lastName: string;
-  companyName?: string;
-  country?: string;
-  address: string;
-  city: string;
-  province: string;
-  zip: string;
-  phone: string;
-  email: string;
-  additionalInfo?: string;
-}
 
 // export const saveOrderToSanity = async (
 //   billingDetails: BillingDetails,
@@ -168,23 +196,93 @@ interface BillingDetails {
 
 
 // Save order to Sanity
-const saveOrderToSanity = async (orderData: any) => {
+// const saveOrderToSanity = async (orderData: any) => {
+//   try {
+//     const result = await client.create({
+//       _type: "order",
+//       customerInfo: orderData.customerInfo,
+//       cartItems: orderData.cartItems,
+//       totalAmount: orderData.totalAmount,
+//       subtotal: orderData.subtotal,
+//       orderDate: new Date().toISOString(),
+//       receiptGenerated: orderData.receiptGenerated,
+//     });
+//     console.log("Order saved successfully to Sanity:", result);
+//   } catch (error) {
+//     console.error("Error saving order to Sanity:", error);
+//   }
+// };
+
+// export { saveOrderToSanity };
+
+
+
+
+
+
+
+
+
+
+
+
+
+// In your sanity/lib/data.ts or wherever the function is defined
+
+
+// export const saveOrderToSanity = async (orderData: any): Promise<Order> => {
+//   try {
+//     // Your code to save the order to Sanity
+//     const savedOrder = await client.create(orderData); // Example of saving the order
+//     return savedOrder; // Ensure the saved order is returned
+//   } catch (error) {
+//     console.error("Error saving order:", error);
+//     throw error; // Rethrow error if saving fails
+//   }
+// };
+
+
+// export const saveOrderToSanity = async (orderData: any): Promise<Order> => {
+//   try {
+//     // Construct the document with the correct type and data
+//     const document = {
+//       _type: "order", // Match this with the Sanity schema
+//       ...orderData,
+//     };
+
+//     // Save the document to Sanity
+//     const savedOrder = await client.create(document);
+//     return savedOrder; // Ensure the saved order is returned
+//   } catch (error) {
+//     console.error("Error saving order:", error);
+//     throw error; // Rethrow the error if saving fails
+//   }
+// };
+
+
+export const saveOrderToSanity = async (orderData: Order): Promise<Order> => {
   try {
-    const result = await client.create({
-      _type: "order",
-      customerInfo: orderData.customerInfo,
-      cartItems: orderData.cartItems,
-      totalAmount: orderData.totalAmount,
-      subtotal: orderData.subtotal,
-      orderDate: new Date().toISOString(),
-      receiptGenerated: orderData.receiptGenerated,
-    });
-    console.log("Order saved successfully to Sanity:", result);
+    // Construct the document with the correct type and data
+    const document = {
+      _type: "order", // Match this with the Sanity schema
+      ...orderData,
+    };
+
+    // Save the document to Sanity
+    const savedOrder = await client.create(document);
+
+    // Map the saved document back to your Order type
+    const order: Order = {
+      billingDetails: savedOrder.billingDetails,
+      CartItems: savedOrder.CartItems,
+      orderDetails: savedOrder.orderDetails,
+      orderPlaced: savedOrder.orderPlaced,
+    };
+
+    return order;
   } catch (error) {
-    console.error("Error saving order to Sanity:", error);
+    console.error("Error saving order:", error);
+    throw error; // Rethrow the error if saving fails
   }
 };
-
-export { saveOrderToSanity };
-
 

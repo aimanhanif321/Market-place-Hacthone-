@@ -13,6 +13,7 @@ import { addToCart } from '../../(addtocart)/redux/Features/CartSlice'; // Impor
 import { getProductById } from '@/sanity/lib/data';
 import RelatedProducts from '@/components/RelatedProduct/page';
 
+
 // export default function Page({ params }: { params: Promise<{ slug: string }> }) {
 //   // Unwrap the promise to get the actual params
 //   const [unwrappedParams, setUnwrappedParams] = useState<{ slug: string } | null>(null);
