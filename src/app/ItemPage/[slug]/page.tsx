@@ -13,26 +13,71 @@ import { addToCart } from '../../(addtocart)/redux/Features/CartSlice'; // Impor
 import { getProductById } from '@/sanity/lib/data';
 import RelatedProducts from '@/components/RelatedProduct/page';
 
-export default function Page({ params }: { params: Promise<{ slug: string }> }) {
-  // Unwrap the promise to get the actual params
-  const [unwrappedParams, setUnwrappedParams] = useState<{ slug: string } | null>(null);
+// export default function Page({ params }: { params: Promise<{ slug: string }> }) {
+//   // Unwrap the promise to get the actual params
+//   const [unwrappedParams, setUnwrappedParams] = useState<{ slug: string } | null>(null);
+
+//   useEffect(() => {
+//     // Unwrapping the params promise
+//     params.then((resolvedParams) => {
+//       setUnwrappedParams(resolvedParams);
+//     });
+//   }, [params]);
+
+//   const [product, setProduct] = useState<any>(null);
+//   const [quantity, setQuantity] = useState(1);
+//   const dispatch = useDispatch();
+
+//   useEffect(() => {
+//     if (unwrappedParams) {
+//       const fetchProduct = async () => {
+//         try {
+//           const productData = await getProductById(unwrappedParams.slug); // Fetch product using slug
+//           setProduct(productData);
+//         } catch (error) {
+//           console.error('Error fetching product:', error);
+//         }
+//       };
+
+//       fetchProduct();
+//     }
+//   }, [unwrappedParams]);
+
+//   if (!product) {
+//     return <div>Product not found</div>;
+//   }
+
+//   const handleAddToCart = () => {
+//     const cartItem = {
+//       id: product._id, // Ensure this matches your schema
+//       title: product.title,
+//       price: product.price,
+//       quantity,
+//       imageUrl: product.imageUrl, // Ensure this matches your schema
+//     };
+//     dispatch(addToCart(cartItem));
+//   };
+
+export default function Page({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
+  // State to store unwrapped params
+  const [params, setParams] = useState<{ slug: string } | null>(null);
 
   useEffect(() => {
-    // Unwrapping the params promise
-    params.then((resolvedParams) => {
-      setUnwrappedParams(resolvedParams);
+    // Unwrap the params Promise
+    paramsPromise.then((resolvedParams) => {
+      setParams(resolvedParams);
     });
-  }, [params]);
+  }, [paramsPromise]);
 
   const [product, setProduct] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (unwrappedParams) {
+    if (params) {
       const fetchProduct = async () => {
         try {
-          const productData = await getProductById(unwrappedParams.slug); // Fetch product using slug
+          const productData = await getProductById(params.slug); // Fetch product using slug
           setProduct(productData);
         } catch (error) {
           console.error('Error fetching product:', error);
@@ -41,7 +86,7 @@ export default function Page({ params }: { params: Promise<{ slug: string }> }) 
 
       fetchProduct();
     }
-  }, [unwrappedParams]);
+  }, [params]);
 
   if (!product) {
     return <div>Product not found</div>;
@@ -49,15 +94,14 @@ export default function Page({ params }: { params: Promise<{ slug: string }> }) 
 
   const handleAddToCart = () => {
     const cartItem = {
-      id: product._id, // Ensure this matches your schema
+      id: product._id,
       title: product.title,
       price: product.price,
       quantity,
-      imageUrl: product.imageUrl, // Ensure this matches your schema
+      imageUrl: product.imageUrl,
     };
     dispatch(addToCart(cartItem));
   };
- 
   return (
     <>
       {/* Product content */}
