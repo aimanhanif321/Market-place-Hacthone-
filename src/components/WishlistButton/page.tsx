@@ -4,9 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToWishlist, removeFromWishlist } from '../../app/(addtocart)/redux/Features/wishlistSlice';
 import { IoHeart, IoHeartOutline } from 'react-icons/io5';
-
 interface WishlistButtonProps {
-  product: { id: string; title: string; price: number; imageUrl: string };
+  product: 
+  { _id: string; title: string; price: number; imageUrl: string };
 }
 
 const WishlistButton: React.FC<WishlistButtonProps> = ({ product }) => {
@@ -20,8 +20,8 @@ const WishlistButton: React.FC<WishlistButtonProps> = ({ product }) => {
 
   // Sync local state with Redux state
   useEffect(() => {
-    setIsInWishlist(wishlistItems.some((item: any) => item.id === product.id));
-  }, [wishlistItems, product.id]);
+    setIsInWishlist(wishlistItems.some((item: any) => item._id === product._id));
+  }, [wishlistItems, product._id]);
 
   const handleAddToWishlist = () => {
     if (!isInWishlist) {
@@ -30,13 +30,13 @@ const WishlistButton: React.FC<WishlistButtonProps> = ({ product }) => {
   };
 
   const handleRemoveFromWishlist = () => {
-    dispatch(removeFromWishlist(product.id));
+    dispatch(removeFromWishlist(product._id));
   };
 
   return (
     <button
       onClick={isInWishlist ? handleRemoveFromWishlist : handleAddToWishlist}
-      className="flex items-center gap-2 text-lg font-semibold"
+      className="flex items-center gap-2 text-lg font-semibold hover:bg-red-600"
     >
       {isInWishlist ? (
         <IoHeart size={24} color="red" />

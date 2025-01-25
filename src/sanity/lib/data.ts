@@ -2,6 +2,10 @@ import { client } from "@/sanity/lib/client";
 import { Order } from '../../app/(addtocart)/redux/Features/OrderSlice'; // Ensure you're importing the Order typenpm 
 import { CartItem} from "@/app/(addtocart)/redux/types";
 
+
+
+
+
 interface OrderDetails {
   orderId: string;
   status: string;
@@ -260,7 +264,36 @@ export const getProductsBySearchTerm = async (searchTerm: string) => {
 // };
 
 
-export const saveOrderToSanity = async (orderData: Order): Promise<Order> => {
+// export const saveOrderToSanity = async (orderData: Order): Promise<Order> => {
+//   try {
+//     // Construct the document with the correct type and data
+//     const document = {
+//       _type: "order", // Match this with the Sanity schema
+//       ...orderData,
+//     };
+
+//     // Save the document to Sanity
+//     const savedOrder = await client.create(document);
+
+//     // Map the saved document back to your Order type
+//     const order: Order = {
+//       billingDetails: savedOrder.billingDetails,
+//       CartItems: savedOrder.CartItems,
+//       orderDetails: savedOrder.orderDetails,
+//       orderPlaced: savedOrder.orderPlaced,
+//     };
+
+//     return order;
+//   } catch (error) {
+//     console.error("Error saving order:", error);
+//     throw error; // Rethrow the error if saving fails
+//   }
+// };
+
+
+
+
+export const saveOrderToSanity = async (orderData: Order): Promise<Order & { _id: string }> => {
   try {
     // Construct the document with the correct type and data
     const document = {
@@ -268,11 +301,12 @@ export const saveOrderToSanity = async (orderData: Order): Promise<Order> => {
       ...orderData,
     };
 
-    // Save the document to Sanity
+    // Save the document to Sanity and get the response
     const savedOrder = await client.create(document);
 
-    // Map the saved document back to your Order type
-    const order: Order = {
+    // Map the response to the expected Order type, including _id
+    const order: Order & { _id: string } = {
+      _id: savedOrder._id, // Assign the returned _id
       billingDetails: savedOrder.billingDetails,
       CartItems: savedOrder.CartItems,
       orderDetails: savedOrder.orderDetails,
@@ -281,8 +315,8 @@ export const saveOrderToSanity = async (orderData: Order): Promise<Order> => {
 
     return order;
   } catch (error) {
-    console.error("Error saving order:", error);
-    throw error; // Rethrow the error if saving fails
+    console.error("Error saving order to Sanity:", error);
+    throw error; // Rethrow the error to handle it in the caller
   }
 };
 

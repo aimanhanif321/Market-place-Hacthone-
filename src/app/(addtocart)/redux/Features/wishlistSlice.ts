@@ -2,7 +2,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface WishlistItem {
-  id: string;
+  _id: string;
   title: string;
   price: number;
   imageUrl: string;
@@ -22,13 +22,13 @@ const wishlistSlice = createSlice({
   reducers: {
     addToWishlist: (state, action: PayloadAction<WishlistItem>) => {
       // Ensure no duplicates are added based on the `id`
-      const existingItem = state.items.find(item => item.id === action.payload.id);
+      const existingItem = state.items.find(item => item._id === action.payload._id);
       if (!existingItem) {
         state.items.push(action.payload); // Add the item if it's not already in the wishlist
       }
     },
     removeFromWishlist: (state, action: PayloadAction<string>) => {
-      state.items = state.items.filter(item => item.id !== action.payload); // Remove item by id
+      state.items = state.items.filter(item => item._id !== action.payload); // Remove item by id
     },
   },
 });
