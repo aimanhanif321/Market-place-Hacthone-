@@ -1,6 +1,3 @@
-
-
-
 'use client';
 
 
@@ -12,53 +9,7 @@ import { useDispatch } from 'react-redux';
 import { addToCart } from '../../(addtocart)/redux/Features/CartSlice'; // Import the addToCart action
 import { getProductById } from '@/sanity/lib/data';
 import RelatedProducts from '@/components/RelatedProduct/page';
-
-
-// export default function Page({ params }: { params: Promise<{ slug: string }> }) {
-//   // Unwrap the promise to get the actual params
-//   const [unwrappedParams, setUnwrappedParams] = useState<{ slug: string } | null>(null);
-
-//   useEffect(() => {
-//     // Unwrapping the params promise
-//     params.then((resolvedParams) => {
-//       setUnwrappedParams(resolvedParams);
-//     });
-//   }, [params]);
-
-//   const [product, setProduct] = useState<any>(null);
-//   const [quantity, setQuantity] = useState(1);
-//   const dispatch = useDispatch();
-
-//   useEffect(() => {
-//     if (unwrappedParams) {
-//       const fetchProduct = async () => {
-//         try {
-//           const productData = await getProductById(unwrappedParams.slug); // Fetch product using slug
-//           setProduct(productData);
-//         } catch (error) {
-//           console.error('Error fetching product:', error);
-//         }
-//       };
-
-//       fetchProduct();
-//     }
-//   }, [unwrappedParams]);
-
-//   if (!product) {
-//     return <div>Product not found</div>;
-//   }
-
-//   const handleAddToCart = () => {
-//     const cartItem = {
-//       id: product._id, // Ensure this matches your schema
-//       title: product.title,
-//       price: product.price,
-//       quantity,
-//       imageUrl: product.imageUrl, // Ensure this matches your schema
-//     };
-//     dispatch(addToCart(cartItem));
-//   };
-
+import { truncateDescription } from '@/sanity/lib/data';
 export default function Page({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
   // State to store unwrapped params
   const [params, setParams] = useState<{ slug: string } | null>(null);
@@ -116,7 +67,24 @@ export default function Page({ params: paramsPromise }: { params: Promise<{ slug
         <div className="flex flex-col max-w-lg">
           <h1 className="text-4xl font-semibold mb-2">{product.title}</h1>
           <span className="text-2xl text-black">${product.price}</span>
-          <p className="text-sm text-gray-700 mt-2">{product.description}</p>
+          <div className="">
+            <p className="text-gray-700 text-sm mt-4">{truncateDescription(product.description, 150)}</p>
+          </div>
+
+          <div className="mt-2 flex flex-wrap gap-3">
+  {product.tags?.length ? (
+    product.tags.map((tag:string[], index:string) => (
+      <span
+        key={index}
+        className="text-sm bg-slate-400 text-black rounded-full px-2 py-1"
+      >
+        {tag}
+      </span>
+    ))
+  ) : (
+    <p className="text-sm text-gray-500">No tags available</p>
+  )}
+</div>
 
           {/* Quantity Selection */}
           <div className="flex items-center gap-3 mt-6">
