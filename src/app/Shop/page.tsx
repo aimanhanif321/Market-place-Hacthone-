@@ -46,7 +46,7 @@ const ShopPage = () => {
   return (
     <div>
          <div>
-//         <Image
+        <Image
           src={"/images/shop.png"}
           alt="shop"
           width={1440}
@@ -158,10 +158,5 @@ const ShopPage = () => {
 };
 
 export default ShopPage
-{/* <h3 className='text-[24px] font-semibold text-[#3A3A3A] mt-4'>Lolito</h3>
-<p className='text-center'>Luxury big sofa</p>
-<div className='flex justify-center items-center gap-2'>
-    <span className='text-[20px] font-semibold'>Rp 7.000.000</span>
-    <span className='text-[16px] line-through text-gray-500'>Rp 3.500.000</span> */}
 
 

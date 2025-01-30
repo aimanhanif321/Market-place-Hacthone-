@@ -35,16 +35,17 @@ const WishlistButton: React.FC<WishlistButtonProps> = ({ product }) => {
 
   return (
     <button
-      onClick={isInWishlist ? handleRemoveFromWishlist : handleAddToWishlist}
-      className="flex items-center gap-2 text-lg font-semibold hover:bg-red-600"
-    >
-      {isInWishlist ? (
-        <IoHeart size={24} color="red" />
-      ) : (
-        <IoHeartOutline size={24} />
-      )}
-      {isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
-    </button>
+    onClick={isInWishlist ? handleRemoveFromWishlist : handleAddToWishlist}
+    className="w-full h-[44px] rounded-2xl border border-gray-800 bg-[#B88E2F] text-white flex items-center justify-center gap-2 hover:bg-[#A0741E] transition duration-300"
+  >
+    {isInWishlist ? (
+      <IoHeart size={24} color="white" />
+    ) : (
+      <IoHeartOutline size={24} color="white" />
+    )}
+    <span>{isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}</span>
+  </button>
+  
   );
 };
 

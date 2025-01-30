@@ -1,12 +1,14 @@
 "use client";
 
-
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { client } from "@/sanity/lib/client";
 import WishlistButton from "@/components/WishlistButton/page";
 import Image from "next/image";
 import { truncateDescription } from "@/sanity/lib/data";
+import AddToCartButton from "@/components/AddCartButton/page";
+
+
 
 // Define Product type
 export interface Product {
@@ -49,7 +51,10 @@ const ProductList = () => {
   // Pagination logic
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+  const currentProducts = products.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
 
   const totalPages = Math.ceil(products.length / productsPerPage);
 
@@ -59,102 +64,120 @@ const ProductList = () => {
     }
   };
 
-  return (
-    <div className="mt-20">
-      <h1 className="heading">Our Products</h1>
-      <div className="mt-10 relative w-[95%] md:w-[90%] lg:w-[80%] xl:w-[80%] justify-center mx-auto grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {currentProducts.map((product) => (
-          <div key={product._id} className="border p-4 rounded-md shadow-md">
-            <div className="relative cursor-pointer text-center mx-auto bg-[#EAECF0] rounded-lg mb-9 w-[285px] h-[560px]">
-              <img
-                src={product.imageUrl}
-                alt={product.title}
-                className="w-full h-40 md:h-64 lg:h-80 object-cover rounded-t-lg"
-              />
-              <div className="p-4">
-                <h1 className="heading3">{product.title}</h1>
-                <div className="mt-2">
-  <p className="text-gray-700 text-sm">{truncateDescription(product.description, 25)}</p>
-</div>
 
-              
-                <div className="flex justify-between items-center pt-3">
-                  <h3 className="text-[18px] font-bold text-gray-800">
-                    Rp: {product.price}$
-                  </h3>
-                  
-                  {product.discountPercentage && (
-                    <p className="text-sm text-[#B88E2F]">
-                      {product.discountPercentage}% off
-                    </p>
-                  )}
-                  {product.isNew && <span className="text-sm  font-bold ml-2">New!</span>}
-                </div>
-               
+ 
 
+  // Handle Add to Cart for the Product Listing Page
+
+
+  
+    return (
+      <div className="mt-20">
+        <h1 className="text-4xl font-bold text-center text-gray-900 mb-10">Our Products</h1>
+  
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 px-4">
+          {currentProducts.map((product) => (
+            <div
+              key={product._id}
+              className="border rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 bg-white p-6 flex flex-col justify-between"
+            >
+              {/* Product Image */}
+              <div className="relative flex justify-center items-center bg-gray-100 rounded-lg w-full h-64 overflow-hidden">
+                <img
+                  src={product.imageUrl}
+                  alt={product.title}
+                  className="w-full h-full object-cover"
+                />
               </div>
-
-              <div className="mt-2 flex flex-wrap gap-3">
-  {product.tags?.length ? (
-    product.tags.map((tag, index) => (
-      <span
-        key={index}
-        className="text-sm bg-slate-400 text-black rounded-full px-2 py-1"
-      >
-        {tag}
-      </span>
-    ))
-  ) : (
-    <p className="text-sm text-gray-500">No tags available</p>
-  )}
-</div>
-
+  
+              {/* Product Info */}
+              <div className="flex flex-col mt-4">
+                <h1 className="text-xl font-semibold text-gray-900">{product.title}</h1>
+                <p className="text-sm text-gray-600 mt-2">{truncateDescription(product.description, 25)}</p>
+  
+                <div className="mt-3 flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-gray-900">Rp: {product.price}$</h3>
+                  {product.discountPercentage && (
+                    <p className="text-sm text-red-500">{product.discountPercentage}% off</p>
+                  )}
+                  {product.isNew && (
+                    <span className="text-sm font-semibold text-green-600">New!</span>
+                  )}
+                </div>
+              </div>
+  
+              {/* Tags Section */}
+              <div className="mt-4 flex flex-wrap gap-2">
+                {product.tags?.length ? (
+                  product.tags.map((tag, index) => (
+                    <span key={index} className="text-xs bg-gray-300 text-gray-800 font-medium rounded-full px-3 py-1">
+                      {tag}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-xs text-gray-500">No tags available</p>
+                )}
+              </div>
+  
+              {/* Buttons Section */}
+              <div className="mt-6 flex flex-col gap-4">
+                <AddToCartButton product={product} />
+  
+                <Link href={`/ItemPage/${product._id}`}>
+                  <button className="w-full h-[44px] rounded-2xl border border-gray-800 bg-[#B88E2F] text-white hover:bg-[#A0741E] transition duration-300">
+                    View Details
+                  </button>
+                </Link>
+  
+                <WishlistButton product={product} />
+              </div>
             </div>
-            <Link href={`/ItemPage/${product._id}`}>
-              <button className="mt-4  bg-[#B88E2F] mb-4 text-white p-2 rounded">View Details</button>
-            </Link>
-            <WishlistButton product={product} />
-          </div>
-        ))}
-      </div>
-
-      <div className="flex justify-center items-center mt-8 space-x-2">
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className={`px-4 py-2 rounded-md border ${
-            currentPage === 1 ? "bg-gray-300 cursor-not-allowed" : "bg-[#B88E2F] text-white"
-          }`}
-        >
-          Previous
-        </button>
-
-        {Array.from({ length: totalPages }, (_, index) => (
+          ))}
+        </div>
+  
+        {/* Pagination */}
+        <div className="flex justify-center items-center mt-10 space-x-2">
           <button
-            key={index}
-            onClick={() => handlePageChange(index + 1)}
-            className={`px-3 py-2 rounded-md border ${
-              currentPage === index + 1 ? "bg-[#B88E2F] text-white" : "bg-white"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-6 py-2 rounded-lg border font-medium ${
+              currentPage === 1
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-[#B88E2F] text-white hover:bg-[#A0741E] transition duration-300"
             }`}
           >
-            {index + 1}
+            Previous
           </button>
-        ))}
-
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className={`px-4 py-2 rounded-md border ${
-            currentPage === totalPages ? "bg-gray-300 cursor-not-allowed" : "bg-[#B88E2F] text-white"
-          }`}
-        >
-          Next
-        </button>
+  
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => handlePageChange(index + 1)}
+              className={`px-4 py-2 rounded-lg font-medium transition duration-300 ${
+                currentPage === index + 1
+                  ? "bg-[#B88E2F] text-white"
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+  
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-6 py-2 rounded-lg border font-medium ${
+              currentPage === totalPages
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-[#B88E2F] text-white hover:bg-[#A0741E] transition duration-300"
+            }`}
+          >
+            Next
+          </button>
+        </div>
       </div>
-    </div>
-  );
-};
-
-export default ProductList;
-
-
+    );
+  };
+  
+  export default ProductList;
+  

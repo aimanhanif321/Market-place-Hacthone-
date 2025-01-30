@@ -44,7 +44,7 @@ export default function Page({ params: paramsPromise }: { params: Promise<{ slug
     return <div>Product not found</div>;
   }
 
-  const handleAddToCart = () => {
+   const handleAddToCart = () => {
     const cartItem = {
       id: product._id,
       title: product.title,
@@ -104,7 +104,7 @@ export default function Page({ params: paramsPromise }: { params: Promise<{ slug
           </div>
 <div className='flex mt-10'>
           {/* Add to Cart Button */}
-         <div> <Link href="/Cart">
+          <Link href="/Cart">
             <button
               onClick={handleAddToCart}
               className="w-[123px] h-[64px] rounded-2xl border border-black mt-4 sm:mt-0 sm:ml-3 hover:bg-[#B88E2F] hover:text-white"
@@ -127,7 +127,7 @@ export default function Page({ params: paramsPromise }: { params: Promise<{ slug
           </div>
         </div>
         
-      </div>
+    
       <RelatedProducts
   currentProductId={product._id}
 />

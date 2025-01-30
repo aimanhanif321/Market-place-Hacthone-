@@ -3,10 +3,14 @@ import Hero from "@/components/Hero/page";
 import SecPart from "@/components/SecPart/page";
 import ProductList from "@/app/ProductList/page"; // Import the updated ProductList component
 import SearchBar from "@/components/SearchBAr/page";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 export default async function Home() {
   return (
     <div>
+      <ToastContainer/>
       <SearchBar />
       <Hero />
       <SecPart />

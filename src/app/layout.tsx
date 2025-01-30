@@ -5,7 +5,8 @@ import "./globals.css";
 import Navbar from "@/components/Navbar/page";
 import Footer from "@/components/Footer/page";
 import Providers from "./Providers";
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 
@@ -41,6 +42,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${poppoins.className} ${geistMono.variable} antialiased`}
       >
+        <ToastContainer />
         <Providers>
         <Navbar/>
         {children}
