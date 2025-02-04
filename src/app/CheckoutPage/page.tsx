@@ -1,228 +1,255 @@
+"use client"
+
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setBillingDetails, clearOrder, setOrderPlaced, setOrderDetails } from "../(addtocart)/redux/Features/OrderSlice";
+import { RootState } from "../../app/(addtocart)/redux/store";
+import { CartItem } from "../(addtocart)/redux/Features/CartSlice";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+
+const CheckoutForm = ({ totalAmount, formData }: { totalAmount: number; formData: any }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [clientSecret, setClientSecret] = useState("");
+
+  useEffect(() => {
+    fetch("/api/create-payment-intent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: totalAmount * 100 }),
+    })
+      .then((res) => res.json())
+      .then((data) => setClientSecret(data.clientSecret))
+      .catch((error) => console.error("Error fetching clientSecret:", error));
+  }, [totalAmount]);
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!stripe || !elements || !clientSecret) return;
+
+    setLoading(true);
+
+    const result = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: { card: elements.getElement(CardElement)! },
+    });
+
+    if (result.error) {
+      console.error(result.error.message);
+      alert("Payment failed!");
+      setLoading(false);
+    } else {
+      alert("Payment successful!");
+      router.push(`/order-confirmation/${result.paymentIntent.id}`);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <CardElement className="border p-2 rounded" />
+      <button type="submit" disabled={!stripe || loading} className="bg-blue-500 text-white py-2 px-4 rounded">
+        {loading ? "Processing..." : "Pay Now"}
+      </button>
+    </form>
+  );
+};
+
+const CheckoutPage = () => {
+  const dispatch = useDispatch();
+  const cartItems: CartItem[] = useSelector((state: RootState) => state.cart.items);
+  const router = useRouter();
+
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    province: "",
+    zip: "",
+  });
+
+  const [totalAmount, setTotalAmount] = useState(0);
+
+  useEffect(() => {
+    const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    setTotalAmount(subtotal);
+  }, [cartItems]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  return (
+    <div className="bg-gray-50">
+      <div>
+        <Image src="/images/check.png" alt="checkout" width={1440} height={316} className="w-full h-auto mt-4" />
+      </div>
+      <h2 className="text-6xl font-semibold  text-center mt-20">Billing Info</h2>
+
+      {/* Form Inputs */}
+      <div className="grid gap-4 p-20">
+        <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} className="border p-2 rounded" />
+        <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} className="border p-2 rounded" />
+        <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} className="border p-2 rounded" />
+        <input type="tel" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} className="border p-2 rounded" />
+        <input type="text" name="address" placeholder="Shipping Address" value={formData.address} onChange={handleChange} className="border p-2 rounded" />
+        <input type="text" name="city" placeholder="City" value={formData.city} onChange={handleChange} className="border p-2 rounded" />
+        <input type="text" name="province" placeholder="Province" value={formData.province} onChange={handleChange} className="border p-2 rounded" />
+        <input type="text" name="zip" placeholder="Zip" value={formData.zip} onChange={handleChange} className="border p-2 rounded" />
+      </div>
+
+      {/* Total Price */}
+      <div className="mt-4">
+        <h3 className="text-3xl font-semibold">Total Amount: ${totalAmount.toFixed(2)}</h3>
+      </div>
+
+      {/* Stripe Payment Form */}
+      <Elements stripe={stripePromise}>
+        <CheckoutForm totalAmount={totalAmount} formData={formData} />
+      </Elements>
+    </div>
+  );
+};
+
+export default CheckoutPage;
 
 
 
-
-
-// "use client";
-// import Image from "next/image";
+// import { useState, useEffect } from "react";
 // import { useDispatch, useSelector } from "react-redux";
-// import {
-//   setBillingDetails,
-//   clearOrder,
-//   setOrderPlaced,
-//   setOrderDetails,
-// } from "../(addtocart)/redux/Features/OrderSlice";
+// import { setBillingDetails, clearOrder, setOrderPlaced, setOrderDetails } from "../(addtocart)/redux/Features/OrderSlice";
 // import { RootState } from "../../app/(addtocart)/redux/store";
-// import { saveOrderToSanity } from "../../sanity/lib/data"; // Sanity save function import
-// import { useState } from "react";
-// import Feature from "@/components/Feature/page";
 // import { CartItem } from "../(addtocart)/redux/Features/CartSlice";
+// import { useRouter } from "next/navigation";
+// import Image from "next/image";
+// import { loadStripe } from "@stripe/stripe-js";
+// import { Elements, useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+
+
 
 // const CheckoutPage = () => {
 //   const dispatch = useDispatch();
-//   const cartItems = useSelector((state: RootState) => state.cart.items);
+//   const cartItems: CartItem[] = useSelector((state: RootState) => state.cart.items);
+//   const router = useRouter();
 
-//   const [form, setForm] = useState({
-//     firstName: " ",
-//     lastName: " ",
-//     address: " ",
-//     city: " ",
-//     province: " ",
-//     zip: " ",
-//     phone: " ",
-//     email: " ",
+//   // State for form data with all required BillingDetails properties
+//   const [formData, setFormData] = useState({
+//     firstName: "",
+//     lastName: "",
+//     email: "",
+//     phone: "",
+//     address: "",
+//     city: "",
+//     province: "",
+//     zip: ""
 //   });
 
+//   // State for order
+//   const [totalAmount, setTotalAmount] = useState(0);
+//   const [isLoading, setIsLoading] = useState(false);
 //   const [receiptGenerated, setReceiptGenerated] = useState(false);
-//   const [orderNumber, setOrderNumber] = useState(""); // Order ID
-//   const [totalAmount, setTotalAmount] = useState(0); // Total Amount
+//   const [orderNumber, setOrderNumber] = useState("");
 
+//   useEffect(() => {
+//     // Calculate total amount
+//     const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+//     setTotalAmount(subtotal);
+//   }, [cartItems]);
+
+//   // Function to handle input changes
 //   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const { name, value } = e.target;
-//     setForm((prev) => ({ ...prev, [name]: value }));
+//     setFormData({ ...formData, [e.target.name]: e.target.value });
 //   };
 
+//   const generateOrderId = () => "ORD-" + Math.floor(Math.random() * 1000000);
 
 //   const handleSubmit = async () => {
-//     if (!form.firstName || !form.lastName || !form.email || !form.address) {
+//     if (!formData.firstName || !formData.lastName || !formData.email || !formData.address || !formData.city || !formData.province || !formData.zip) {
 //       alert("Please fill in all required fields.");
 //       return;
 //     }
 
-//     const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-//     const total = subtotal; // Adjust if needed
+//     setIsLoading(true);
 
 //     const orderData = {
-//       _type: "order", // This must match your Sanity schema
-//       customerInfo: form,
-//       cartItems,
-//       totalAmount: total,
-//       subtotal,
-//       orderId: "",
-//       orderDate: new Date().toISOString(),
-//       status: "pending",
+//       billingDetails: formData,
+//       cartItems: cartItems,
+//       orderDetails: {
+//         orderId: generateOrderId(),
+//         status: "pending",
+//       },
+//       orderPlaced: false,
 //     };
 
 //     try {
-//       const savedOrder = await saveOrderToSanity(orderData);
+//       const response = await fetch('/api/place-order', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(orderData),
+//       });
 
-//       setOrderNumber(savedOrder?._id || "N/A");
-//       setTotalAmount(total);
+//       if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
 
-//       dispatch(setBillingDetails({ ...form, cartItems}));
-//       dispatch(setOrderDetails(orderData));
-//       dispatch(clearOrder());
-//       dispatch(setOrderPlaced(true));
+//       const result = await response.json();
 
-//       setReceiptGenerated(true);
+//       if (result.message === "Order placed successfully!") {
+//         dispatch(setBillingDetails(formData));
+//         dispatch(setOrderDetails({ ...orderData.orderDetails, orderId: result._id || orderData.orderDetails.orderId }));
+//         dispatch(setOrderPlaced(true));
+//         dispatch(clearOrder());
 
-//       alert("Order placed successfully!");
+//         alert("Order placed successfully!");
+//         setReceiptGenerated(true);
+//         router.push(`/order-confirmation/${orderData.orderDetails.orderId}`);
+//       } else {
+//         alert("Failed to place order.");
+//       }
 //     } catch (error) {
-//       console.error("Error saving order:", error);
+//       console.error("Error placing order:", error);
 //       alert("Failed to place order. Please try again.");
+//     } finally {
+//       setIsLoading(false);
 //     }
 //   };
 
 //   return (
-//     <div className="bg-gray-50">
-//       {/* Hero Section */}
-//       <div>
-//         <Image
-//           src="/images/check.png"
-//           alt="checkout"
-//           width={1440}
-//           height={316}
-//           className="w-full h-auto mt-4"
-//         />
+    
+//         <div className="bg-gray-50">
+//        <div>
+//         <Image src="/images/check.png" alt="checkout" width={1440} height={316} className="w-full h-auto mt-4" />
+//       </div>
+//       <h2 className="text-2xl font-semibold mb-4">Checkout</h2>
+
+//       {/* Form Inputs */}
+//       <div className="grid gap-4">
+//         <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} className="border p-2 rounded" />
+//         <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} className="border p-2 rounded" />
+//         <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} className="border p-2 rounded" />
+//         <input type="tel" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} className="border p-2 rounded" />
+//         <input type="text" name="address" placeholder="Shipping Address" value={formData.address} onChange={handleChange} className="border p-2 rounded" />
+//         <input type="text" name="city" placeholder="City" value={formData.city} onChange={handleChange} className="border p-2 rounded" />
+//         <input type="text" name="province" placeholder="Province" value={formData.province} onChange={handleChange} className="border p-2 rounded" />
+//         <input type="text" name="zip" placeholder="Zip" value={formData.zip} onChange={handleChange} className="border p-2 rounded" />
 //       </div>
 
-//       {/* Main Content */}
-//       <div className="container mx-auto px-4 lg:px-12 mt-16">
-//         <div className="flex flex-col lg:flex-row items-start justify-between gap-10">
-//           {/* Left Side: Billing Form */}
-//           <div className="w-full lg:w-[60%] bg-white p-6 rounded-lg shadow-md">
-//             <h1 className="text-[36px] font-semibold mb-5">Billing details</h1>
-//             {/* <div className="flex flex-wrap items-center justify-start gap-6">
-//               {[
-//                 { label: "First Name", name: "firstName" },
-//                 { label: "Last Name", name: "lastName" },
-//               ].map((field) => (
-//                 <div key={field.name} className="w-full sm:w-[211px]">
-//                   <label className="block text-sm font-medium text-gray-700">
-//                     {field.label}
-//                     <input
-//                       type="text"
-//                       name={field.name}
-//                       value={(form as any)[field.name]}
-//                       onChange={handleChange}
-//                       className="mt-2 w-full h-[48px] border border-gray-300 rounded-lg px-3 focus:outline-none focus:ring-2 focus:ring-black"
-//                     />
-//                   </label>
-//                 </div>
-//               ))}
-//             </div> */}
-//              <div className="flex flex-wrap items-center justify-start gap-6">
-//           {[{ label: "First Name", name: "firstName" }, { label: "Last Name", name: "lastName" }].map(
-//             (field) => (
-//               <div key={field.name} className="w-full sm:w-[211px]">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   {field.label}
-//                   <input
-//                     type="text"
-//                     name={field.name}
-//                     value={form[field.name as keyof typeof form]} // Ensure TypeScript properly handles dynamic keys
-//                     onChange={handleChange}
-//                     className="mt-2 w-full h-[48px] border border-gray-300 rounded-lg px-3 focus:outline-none focus:ring-2 focus:ring-black"
-//                   />
-//                 </label>
-//               </div>
-//             )
-//           )}
-//           </div>
-//             {/* <div className="mt-4">
-//               {[
-//                 { label: "Company Name (Optional)", name: "company" },
-//                 { label: "Street Address", name: "address" },
-//                 { label: "Town / City", name: "city" },
-//                 { label: "Province", name: "province" },
-//                 { label: "ZIP Code", name: "zip" },
-//                 { label: "Phone", name: "phone" },
-//                 { label: "Email Address", name: "email" },
-//               ].map((field) => (
-//                 <div key={field.name} className="mt-4">
-//                   <label className="block text-sm font-medium text-gray-700">
-//                     {field.label}
-//                     <input
-//                       type={field.name === "email" ? "email" : "text"}
-//                       name={field.name}
-//                       value={(form as any)[field.name]}
-//                       onChange={handleChange}
-//                       className="mt-2 w-full h-[48px] border border-gray-300 rounded-lg px-3 focus:outline-none focus:ring-2 focus:ring-black"
-//                     />
-//                   </label>
-//                 </div>
-//               ))}
-//             </div>
-//           </div> */}
-//            <div className="mt-4">
-//           {[
-//             { label: "Company Name (Optional)", name: "company" },
-//             { label: "Street Address", name: "address" },
-//             { label: "Town / City", name: "city" },
-//             { label: "Province", name: "province" },
-//             { label: "ZIP Code", name: "zip" },
-//             { label: "Phone", name: "phone" },
-//             { label: "Email Address", name: "email" },
-//           ].map((field) => (
-//             <div key={field.name} className="mt-4">
-//               <label className="block text-sm font-medium text-gray-700">
-//                 {field.label}
-//                 <input
-//                   type={field.name === "email" ? "email" : "text"}
-//                   name={field.name}
-//                   value={form[field.name as keyof typeof form]} // Ensure controlled input
-//                   onChange={handleChange}
-//                   className="mt-2 w-full h-[48px] border border-gray-300 rounded-lg px-3 focus:outline-none focus:ring-2 focus:ring-black"
-//                 />
-//               </label>
-//             </div>
-//           ))}
-//         </div>
-//         </div>
-
-//           {/* Right Side: Order Summary */}
-//           <div className="w-full lg:w-[35%] bg-white p-6 rounded-lg shadow-md">
-//             <h2 className="text-[24px] font-semibold mb-6">Order Summary</h2>
-//             <div className="space-y-4">
-//               {cartItems.map((item) => (
-//                 <div key={item.id} className="flex justify-between">
-//                   <span className="text-gray-600">
-//                     {item.title} (x{item.quantity})
-//                   </span>
-//                   <span className="text-gray-900 font-medium">
-//                     Rs. {item.price * item.quantity}
-//                   </span>
-//                 </div>
-//               ))}
-//               <div className="border-t border-gray-300 mt-4 pt-4">
-//                 <div className="flex justify-between text-lg font-semibold">
-//                   <span>Total</span>
-//                   <span>Rs. {totalAmount}</span>
-//                 </div>
-//               </div>
-//             </div>
-//             <button
-//               onClick={handleSubmit}
-//               className="mt-6 w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition"
-//             >
-//               Place Order
-//             </button>
-//           </div>
-//         </div>
+//       {/* Total Price */}
+//       <div className="mt-4">
+//         <h3 className="text-xl font-semibold">Total Amount: ${totalAmount.toFixed(2)}</h3>
 //       </div>
-//       <Feature/>
+
+//       {/* Submit Button */}
+//       <button onClick={handleSubmit} disabled={isLoading} className="mt-4 bg-blue-500 text-white py-2 px-4 rounded">
+//         {isLoading ? "Processing..." : "Place Order"}
+//       </button>
 //     </div>
-
 //   );
 // };
 
@@ -237,268 +264,3 @@
 
 
 
-
-
-
-"use client";
-import Image from "next/image";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  setBillingDetails,
-  clearOrder,
-  setOrderPlaced,
-  setOrderDetails,
-} from "../(addtocart)/redux/Features/OrderSlice";
-import { RootState } from "../../app/(addtocart)/redux/store";
-import { saveOrderToSanity } from "../../sanity/lib/data"; // Sanity save function import
-import { useState, useEffect } from "react";
-import Feature from "@/components/Feature/page";
-import { CartItem } from "../(addtocart)/redux/Features/CartSlice";
-import { Order } from "../(addtocart)/redux/Features/OrderSlice";
-import { setCartItems } from "../(addtocart)/redux/Features/CartSlice"; // Adjust path if needed
-// Define types for form data
-interface FormData {
-  firstName: string;
-  lastName: string;
-  address: string;
-  city: string;
-  province: string;
-  zip: string;
-  phone: string;
-  email: string;
-}
-
-
-
-const CheckoutPage = () => {
-  const dispatch = useDispatch();
-  
-  // Get cart items from Redux store
-  const cartItems = useSelector((state: RootState) => state.cart.items);
-
-  // State to store the form data
-  const [form, setForm] = useState<FormData>({
-    firstName: "",
-    lastName: "",
-    address: "",
-    city: "",
-    province: "",
-    zip: "",
-    phone: "",
-    email: "",
-  });
-
-  const [receiptGenerated, setReceiptGenerated] = useState(false);
-  const [orderNumber, setOrderNumber] = useState(""); 
-  const [totalAmount, setTotalAmount] = useState(0);
-
-  useEffect(() => {
-    // Calculate total amount based on cart items
-    const subtotal = cartItems.reduce(
-      (total, item) => total + item.price * item.quantity, 
-      0
-    );
-    setTotalAmount(subtotal);
-  }, [cartItems]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async () => {
-    // Required fields ko check kar rahe hain
-    if (!form.firstName || !form.lastName || !form.email || !form.address) {
-      alert("Please fill in all required fields."); // Agar koi required field empty hai to alert dikha rahe hain
-      return;
-    }
-  
-
-const orderData: Order = {
-  billingDetails: form, // Set billing details from the form
-  CartItems: cartItems, // Set CartItems from the Redux state
-  orderDetails: {
-    orderId: "", // Order ID will be set after saving to Sanity
-    status: "pending", // Initial order status
-  },
-  orderPlaced: false, // Set to false initially, will be updated after placing the order
-};
-  
-    try {
-      // Sanity mein order save kar rahe hain
-      const savedOrder = await saveOrderToSanity(orderData);
-  
-      // Order ka unique ID set kar rahe hain, agar saveOrder mein ID milti hai to wo set karenge
-      setOrderNumber(savedOrder?._id || "N/A");
-  
-      // Redux ke store mein billing details ko dispatch kar rahe hain
-    // Dispatch billing details (without cartItems)
-    dispatch(setBillingDetails({ ...form }));  // Only dispatch form data for billingDetails
-
-    // Dispatch cartItems to Redux (use setCartItems or appropriate action)
-    dispatch(setCartItems(cartItems));  // Dispatch cartItems separately to the appropriate slice
-
-  
-      // Order details ko dispatch kar rahe hain
-      dispatch(setOrderDetails(orderData.orderDetails));
-  
-      // Cart ko clear kar rahe hain
-      dispatch(clearOrder());
-  
-      // Order placed ko true kar rahe hain
-      dispatch(setOrderPlaced(true));
-  
-      // Receipt generate hone ka flag true kar rahe hain
-      setReceiptGenerated(true);
-      alert("Order placed successfully!"); // Success alert
-    } catch (error) {
-      console.error("Error saving order:", error); // Agar order save nahi ho raha to error log kar rahe hain
-      alert("Failed to place order. Please try again."); // Failure alert
-    }
-  };
-  
-
-  return (
-    <div className="bg-gray-50">
-           {/* Hero Section */}
-           <div>
-             <Image
-              src="/images/check.png"
-              alt="checkout"
-              width={1440}
-              height={316}
-              className="w-full h-auto mt-4"
-            />
-          </div>
-    
-          {/* Main Content */}
-          <div className="container mx-auto px-4 lg:px-12 mt-16">
-            <div className="flex flex-col lg:flex-row items-start justify-between gap-10">
-              {/* Left Side: Billing Form */}
-              <div className="w-full lg:w-[60%] bg-white p-6 rounded-lg shadow-md">
-                <h1 className="text-[36px] font-semibold mb-5">Billing details</h1>
-                {/* <div className="flex flex-wrap items-center justify-start gap-6">
-                  {[
-                    { label: "First Name", name: "firstName" },
-                    { label: "Last Name", name: "lastName" },
-                  ].map((field) => (
-                    <div key={field.name} className="w-full sm:w-[211px]">
-                      <label className="block text-sm font-medium text-gray-700">
-                        {field.label}
-                        <input
-                          type="text"
-                          name={field.name}
-                          value={(form as any)[field.name]}
-                          onChange={handleChange}
-                          className="mt-2 w-full h-[48px] border border-gray-300 rounded-lg px-3 focus:outline-none focus:ring-2 focus:ring-black"
-                        />
-                      </label>
-                    </div>
-                  ))}
-                </div> */}
-                 <div className="flex flex-wrap items-center justify-start gap-6">
-              {[{ label: "First Name", name: "firstName" }, { label: "Last Name", name: "lastName" }].map(
-                (field) => (
-                  <div key={field.name} className="w-full sm:w-[211px]">
-                    <label className="block text-sm font-medium text-gray-700">
-                      {field.label}
-                      <input
-                        type="text"
-                        name={field.name}
-                        value={form[field.name as keyof typeof form]} // Ensure TypeScript properly handles dynamic keys
-                        onChange={handleChange}
-                        className="mt-2 w-full h-[48px] border border-gray-300 rounded-lg px-3 focus:outline-none focus:ring-2 focus:ring-black"
-                      />
-                    </label>
-                  </div>
-                )
-              )}
-              </div>
-                {/* <div className="mt-4">
-                  {[
-                    { label: "Company Name (Optional)", name: "company" },
-                    { label: "Street Address", name: "address" },
-                    { label: "Town / City", name: "city" },
-                    { label: "Province", name: "province" },
-                    { label: "ZIP Code", name: "zip" },
-                    { label: "Phone", name: "phone" },
-                    { label: "Email Address", name: "email" },
-                  ].map((field) => (
-                    <div key={field.name} className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700">
-                        {field.label}
-                        <input
-                          type={field.name === "email" ? "email" : "text"}
-                          name={field.name}
-                          value={(form as any)[field.name]}
-                          onChange={handleChange}
-                          className="mt-2 w-full h-[48px] border border-gray-300 rounded-lg px-3 focus:outline-none focus:ring-2 focus:ring-black"
-                        />
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div> */}
-               <div className="mt-4">
-              {[
-                { label: "Company Name (Optional)", name: "company" },
-                { label: "Street Address", name: "address" },
-                { label: "Town / City", name: "city" },
-                { label: "Province", name: "province" },
-                { label: "ZIP Code", name: "zip" },
-                { label: "Phone", name: "phone" },
-                { label: "Email Address", name: "email" },
-              ].map((field) => (
-                <div key={field.name} className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    {field.label}
-                    <input
-                      type={field.name === "email" ? "email" : "text"}
-                      name={field.name}
-                      value={form[field.name as keyof typeof form]} // Ensure controlled input
-                      onChange={handleChange}
-                      className="mt-2 w-full h-[48px] border border-gray-300 rounded-lg px-3 focus:outline-none focus:ring-2 focus:ring-black"
-                    />
-                  </label>
-                </div>
-              ))}
-            </div>
-            </div>
-    
-              {/* Right Side: Order Summary */}
-              <div className="w-full lg:w-[35%] bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-[24px] font-semibold mb-6">Order Summary</h2>
-                <div className="space-y-4">
-                  {cartItems.map((item) => (
-                    <div key={item.id} className="flex justify-between">
-                      <span className="text-gray-600">
-                        {item.title} (x{item.quantity})
-                      </span>
-                      <span className="text-gray-900 font-medium">
-                        Rs. {item.price * item.quantity}
-                      </span>
-                    </div>
-                  ))}
-                  <div className="border-t border-gray-300 mt-4 pt-4">
-                    <div className="flex justify-between text-lg font-semibold">
-                      <span>Total</span>
-                      <span>Rs. {totalAmount}</span>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={handleSubmit}
-                  className="mt-6 w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition"
-                >
-                  Place Order
-                </button>
-              </div>
-            </div>
-          </div>
-          <Feature/>
-        </div>
-    
-      );
-    };
-    
-export default CheckoutPage;

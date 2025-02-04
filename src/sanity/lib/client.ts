@@ -10,8 +10,8 @@ export const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,  // Make sure the env variable is set
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,  // Ensure this is correct
   apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION,  // Set a default API version if not in env
-  useCdn: false,  // Set to false if you're using server-side rendering (SSR)
-  token: process.env.SANITY_API_TOKEN,  // Ensure you have a valid API token if required
+  useCdn:false,  // Set to false if you're using server-side rendering (SSR)
+  token:process.env.SANITY_API_TOKEN,  // Ensure you have a valid API token if required
 });
 
 
@@ -25,4 +25,4 @@ export const getCategories = async () => {
 
 
 
-;
+
